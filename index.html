@@ -95,14 +95,22 @@ function stats(D){
   return{freq,delay:rit,ssF,ssD:ssR};
 }
 
-function wpick(weights,k){
-  const res=[],w=weights.slice();w[0]=0;
+function wpick(weights,k,escludi=new Set()){
+  const res=[],w=weights.slice();w[0]=0;escludi.forEach(x=>w[x]=0);
   while(res.length<k){const tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot;
     for(let i=1;i<=90;i++){r-=w[i];if(r<=0){res.push(i);w[i]=0;break}}}
   return res.sort((a,b)=>a-b);
 }
-function balanced(n){const ev=n.filter(x=>x%2===0).length,dec=new Set(n.map(x=>Math.floor((x-1)/10)));return ev>=2&&ev<=4&&dec.size>=4}
-function pickBalanced(w){for(let t=0;t<300;t++){const p=wpick(w,6);if(balanced(p))return p}return wpick(w,6)}
+// Equilibrio + "anti-condivisione": evita le combinazioni giocate da molti (date di nascita, sequenze, multipli)
+function balanced(n){
+  const ev=n.filter(x=>x%2===0).length,dec=new Set(n.map(x=>Math.floor((x-1)/10)));
+  const sopra31=n.filter(x=>x>31).length;
+  let consec=0;for(let i=1;i<n.length;i++)if(n[i]===n[i-1]+1)consec++;
+  const multipli=[5,7,10].some(m=>n.filter(x=>x%m===0).length>=4);
+  const fin=new Set(n.map(x=>x%10)).size;
+  return ev>=2&&ev<=4&&dec.size>=4&&sopra31>=3&&consec<=1&&!multipli&&fin>=4;
+}
+function pickBalanced(w,escludi){for(let t=0;t<2000;t++){const p=wpick(w,6,escludi);if(balanced(p))return p}return wpick(w,6,escludi)}
 
 function genera(){
   if(!tutte.length)return;
@@ -113,12 +121,14 @@ function genera(){
   const mixW=freq.map((f,i)=>0.5*(f/maxF)+0.5*(delay[i]/maxD)+0.05);
   const mF=Math.max(...ssF.slice(1),1),mD=Math.max(...ssD.slice(1),1);
   const ssHot=ssF.map(f=>Math.pow(f/mF+0.05,3)),ssCold=ssD.map(d=>Math.pow(d/mD+0.05,3)),ssMix=ssF.map((f,i)=>f/mF+ssD[i]/mD+0.05);
+  const usati=new Set(),prendi=w=>{const p=pickBalanced(w,usati);p.forEach(x=>usati.add(x));return p};
   const T=[
-    {t:'🔥 Numeri caldi',d:'più frequenti nel periodo',n:pickBalanced(hotW),s:ssHot},
-    {t:'❄️ Ritardatari',d:'assenti da più estrazioni',n:pickBalanced(coldW),s:ssCold},
-    {t:'⚖️ Bilanciata',d:'mix frequenza + ritardo, pari/dispari e decine equilibrati',n:pickBalanced(mixW),s:ssMix}
+    {t:'🔥 Numeri caldi',d:'più frequenti nel periodo',n:prendi(hotW),s:ssHot},
+    {t:'❄️ Ritardatari',d:'assenti da più estrazioni',n:prendi(coldW),s:ssCold},
+    {t:'⚖️ Bilanciata',d:'mix frequenza + ritardo',n:prendi(mixW),s:ssMix}
   ];
-  document.getElementById('tickets').innerHTML=T.map(x=>{const ss=wpick(x.s,1)[0];
+  const ssUsati=new Set();T.forEach(x=>{x.ss=wpick(x.s,1,ssUsati)[0];ssUsati.add(x.ss)});
+  document.getElementById('tickets').innerHTML='<div class="sub">18 numeri tutti diversi · combinazioni poco giocate (niente date di nascita, sequenze o multipli)</div>'+T.map(x=>{const ss=x.ss;
     return `<div class="ticket"><h3>${x.t} <span class="lbl">${x.d}</span></h3><div class="balls">${x.n.map(v=>`<div class="ball">${v}</div>`).join('')}<span class="lbl">SuperStar</span><div class="ball ss">${ss}</div></div></div>`}).join('');
 }
 
