@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SuperEnalotto – Generatore Schedine</title>
+<style>
+:root{--bg:#0f1420;--card:#18202f;--ink:#e8ecf3;--mut:#8b96a8;--acc:#f2b632;--hot:#e5534b;--cold:#4ea1f3;--ok:#3fb950}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding:16px;max-width:900px;margin:auto}
+h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.05rem;margin:0 0 .6em}
+.sub{color:var(--mut);font-size:.9rem}
+.card{background:var(--card);border-radius:14px;padding:16px;margin:14px 0}
+button{background:var(--acc);color:#111;border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:.95rem;cursor:pointer;margin:4px 4px 4px 0}
+button.sec{background:#2a3446;color:var(--ink)}
+textarea{width:100%;min-height:110px;background:#0b0f18;color:var(--ink);border:1px solid #2a3446;border-radius:8px;padding:8px;font-family:monospace;font-size:.85rem}
+.ticket{border:1px solid #2a3446;border-radius:12px;padding:12px;margin:10px 0}
+.ticket h3{margin:0 0 8px;font-size:.95rem}
+.balls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ball{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#fff;color:#111;font-size:1.05rem}
+.ball.ss{background:var(--acc)}
+.lbl{font-size:.75rem;color:var(--mut);margin-left:6px}
+#status{font-size:.88rem;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.cell{font-size:.7rem;text-align:center;padding:4px 0;border-radius:4px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}td,th{padding:4px;border-bottom:1px solid #2a3446;text-align:left}
+.warn{font-size:.82rem;color:var(--mut);border-left:3px solid var(--acc);padding-left:10px}
+</style>
+</head>
+<body>
+<h1>🎯 SuperEnalotto Generator</h1>
+<div class="sub">3 schedine (6 numeri + SuperStar) da analisi statistica dello storico estrazioni</div>
+
+<div class="card">
+  <h2>1 · Storico estrazioni</h2>
+  <div id="status">⏳ Carico lo storico…</div>
+  <div style="margin-top:10px">
+    <label class="sub" for="periodo">Periodo da analizzare:</label>
+    <select id="periodo" onchange="render();genera()" style="background:#0b0f18;color:var(--ink);border:1px solid #2a3446;border-radius:8px;padding:8px;font-size:.95rem">
+      <option value="50">Ultime 50 estrazioni</option>
+      <option value="100" selected>Ultime 100 estrazioni</option>
+      <option value="300">Ultime 300 estrazioni</option>
+      <option value="1000">Ultime 1000 estrazioni</option>
+      <option value="0">Tutto lo storico (dal 2006)</option>
+    </select>
+  </div>
+  <button class="sec" onclick="caricaDati(true)">🔄 Ricarica</button>
+</div>
+
+<div class="card">
+  <h2>2 · Schedine generate</h2>
+  <button onclick="genera()">🎲 Genera 3 schedine</button>
+  <div id="tickets"></div>
+</div>
+
+<div class="card">
+  <h2>Mappa frequenze (1–90)</h2>
+  <div class="sub">Rosso = numeri caldi · Bordo blu = ritardatari · tocca un numero per i dettagli</div>
+  <div id="heat" class="grid" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+  <h2>Ultime estrazioni</h2>
+  <table id="last"></table>
+</div>
+
+<p class="warn">Ogni estrazione è indipendente: nessun algoritmo aumenta davvero la probabilità di vincita (6 su 90 ≈ 1 su 622 milioni). Lo strumento organizza le statistiche storiche per scegliere numeri in modo ragionato, a scopo di intrattenimento. Gioca responsabilmente.</p>
+
+<script>
+let tutte=[];
+const fmt=d=>d.split('-').reverse().join('/');
+function st(m){document.getElementById('status').innerHTML=m}
+function draws(){const n=+document.getElementById('periodo').value;return n?tutte.slice(0,n):tutte}
+
+async function caricaDati(forza){
+  st('⏳ Carico lo storico…');
+  try{
+    const r=await fetch('data/estrazioni.json'+(forza?'?t='+Date.now():''),{cache:forza?'no-store':'default'});
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json();
+    tutte=j.estrazioni.map(e=>({c:e.concorso,d:e.data,n:e.numeri,j:e.jolly,ss:e.superstar}));
+    const u=tutte[0];
+    st(`✅ <b>${tutte.length}</b> estrazioni dal 2006 · ultima: n. ${u.c} del ${fmt(u.d)}<br><span class="sub">Archivio aggiornato automaticamente il ${new Date(j.aggiornato).toLocaleString('it-IT')}</span>`);
+    render();genera();
+  }catch(e){
+    st('⚠️ Impossibile leggere lo storico. Apri la pagina dal suo indirizzo GitHub Pages (non dal file scaricato).');
+  }
+}
+
+function stats(D){
+  const L=D.length,freq=Array(91).fill(0),delay=Array(91).fill(L),ssF=Array(91).fill(0),ssD=Array(91).fill(L);
+  D.forEach((d,i)=>{d.n.forEach(x=>{freq[x]++;if(delay[x]===L)delay[x]=i});ssF[d.ss]++;if(ssD[d.ss]===L)ssD[d.ss]=i});
+  // il ritardo si calcola sempre su tutto lo storico
+  const rit=Array(91).fill(tutte.length),ssR=Array(91).fill(tutte.length);
+  tutte.forEach((d,i)=>{d.n.forEach(x=>{if(rit[x]===tutte.length)rit[x]=i});if(ssR[d.ss]===tutte.length)ssR[d.ss]=i});
+  return{freq,delay:rit,ssF,ssD:ssR};
+}
+
+function wpick(weights,k){
+  const res=[],w=weights.slice();w[0]=0;
+  while(res.length<k){const tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot;
+    for(let i=1;i<=90;i++){r-=w[i];if(r<=0){res.push(i);w[i]=0;break}}}
+  return res.sort((a,b)=>a-b);
+}
+function balanced(n){const ev=n.filter(x=>x%2===0).length,dec=new Set(n.map(x=>Math.floor((x-1)/10)));return ev>=2&&ev<=4&&dec.size>=4}
+function pickBalanced(w){for(let t=0;t<300;t++){const p=wpick(w,6);if(balanced(p))return p}return wpick(w,6)}
+
+function genera(){
+  if(!tutte.length)return;
+  const{freq,delay,ssF,ssD}=stats(draws());
+  const maxF=Math.max(...freq.slice(1),1),maxD=Math.max(...delay.slice(1),1);
+  const hotW=freq.map(f=>Math.pow(f/maxF+0.05,3));
+  const coldW=delay.map(d=>Math.pow(d/maxD+0.05,3));
+  const mixW=freq.map((f,i)=>0.5*(f/maxF)+0.5*(delay[i]/maxD)+0.05);
+  const mF=Math.max(...ssF.slice(1),1),mD=Math.max(...ssD.slice(1),1);
+  const ssHot=ssF.map(f=>Math.pow(f/mF+0.05,3)),ssCold=ssD.map(d=>Math.pow(d/mD+0.05,3)),ssMix=ssF.map((f,i)=>f/mF+ssD[i]/mD+0.05);
+  const T=[
+    {t:'🔥 Numeri caldi',d:'più frequenti nel periodo',n:pickBalanced(hotW),s:ssHot},
+    {t:'❄️ Ritardatari',d:'assenti da più estrazioni',n:pickBalanced(coldW),s:ssCold},
+    {t:'⚖️ Bilanciata',d:'mix frequenza + ritardo, pari/dispari e decine equilibrati',n:pickBalanced(mixW),s:ssMix}
+  ];
+  document.getElementById('tickets').innerHTML=T.map(x=>{const ss=wpick(x.s,1)[0];
+    return `<div class="ticket"><h3>${x.t} <span class="lbl">${x.d}</span></h3><div class="balls">${x.n.map(v=>`<div class="ball">${v}</div>`).join('')}<span class="lbl">SuperStar</span><div class="ball ss">${ss}</div></div></div>`}).join('');
+}
+
+function render(){
+  const D=draws(),{freq,delay}=stats(D),mx=Math.max(...freq.slice(1),1),md=Math.max(...delay.slice(1),1);
+  let h='';for(let i=1;i<=90;i++){const a=freq[i]/mx,c=delay[i]/md;
+    h+=`<div class="cell" onclick="st('Numero <b>${i}</b>: uscito ${freq[i]} volte nel periodo · assente da ${delay[i]} estrazioni')" style="background:rgba(229,83,75,${a*.85});box-shadow:inset 0 0 0 2px rgba(78,161,243,${c})">${i}</div>`}
+  document.getElementById('heat').innerHTML=h;
+  document.getElementById('last').innerHTML='<tr><th>N.</th><th>Data</th><th>Numeri</th><th>J</th><th>SS</th></tr>'+tutte.slice(0,10).map(d=>`<tr><td>${d.c}</td><td>${fmt(d.d).slice(0,5)}</td><td>${d.n.join(' ')}</td><td>${d.j}</td><td>${d.ss}</td></tr>`).join('');
+}
+caricaDati();
+</script>
+</body>
+</html>
