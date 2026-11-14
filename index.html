@@ -1,145 +1,183 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SuperEnalotto – Generatore Schedine</title>
+<meta name="theme-color" content="#101827">
+<title>SuperEnalotto PRO – Analisi e schedine</title>
 <style>
-:root{--bg:#0f1420;--card:#18202f;--ink:#e8ecf3;--mut:#8b96a8;--acc:#f2b632;--hot:#e5534b;--cold:#4ea1f3;--ok:#3fb950}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding:16px;max-width:900px;margin:auto}
-h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.05rem;margin:0 0 .6em}
-.sub{color:var(--mut);font-size:.9rem}
-.card{background:var(--card);border-radius:14px;padding:16px;margin:14px 0}
-button{background:var(--acc);color:#111;border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:.95rem;cursor:pointer;margin:4px 4px 4px 0}
-button.sec{background:#2a3446;color:var(--ink)}
-textarea{width:100%;min-height:110px;background:#0b0f18;color:var(--ink);border:1px solid #2a3446;border-radius:8px;padding:8px;font-family:monospace;font-size:.85rem}
-.ticket{border:1px solid #2a3446;border-radius:12px;padding:12px;margin:10px 0}
-.ticket h3{margin:0 0 8px;font-size:.95rem}
-.balls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.ball{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#fff;color:#111;font-size:1.05rem}
-.ball.ss{background:var(--acc)}
-.lbl{font-size:.75rem;color:var(--mut);margin-left:6px}
-#status{font-size:.88rem;color:var(--mut)}
-.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
-.cell{font-size:.7rem;text-align:center;padding:4px 0;border-radius:4px}
-table{width:100%;border-collapse:collapse;font-size:.85rem}td,th{padding:4px;border-bottom:1px solid #2a3446;text-align:left}
-.warn{font-size:.82rem;color:var(--mut);border-left:3px solid var(--acc);padding-left:10px}
+:root{color-scheme:dark;--bg:#0b1220;--panel:#141f31;--panel2:#1b2940;--line:#2a3a54;--txt:#edf3fb;--mut:#9eacc0;--gold:#f4bd4f;--red:#f06b66;--blue:#66b6ff;--green:#65d6a0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172844 0,#0b1220 55%);color:var(--txt);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:22px 16px 50px}.hero{padding:24px 0 12px}.eyebrow{color:var(--gold);font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.75rem}
+h1{font-size:clamp(1.8rem,5vw,3rem);line-height:1.08;margin:8px 0}.lead{color:var(--mut);max-width:760px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}nav a{color:var(--txt);text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:.88rem}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{grid-column:span 12;background:linear-gradient(160deg,#18263a,#121c2d);border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:0 10px 30px #0002}
+.half{grid-column:span 6}.third{grid-column:span 4}@media(max-width:760px){.half,.third{grid-column:span 12}.wrap{padding:14px 12px 36px}}
+h2{font-size:1.12rem;margin:0 0 12px}h3{font-size:.95rem;margin:0 0 8px}.muted,.hint{color:var(--mut)}.hint{font-size:.83rem}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+button,.filebtn{border:0;border-radius:10px;padding:10px 14px;font:700 .9rem system-ui;cursor:pointer;background:var(--gold);color:#171717}
+button.secondary,.filebtn.secondary{background:#2a3b55;color:var(--txt);border:1px solid #3a4c68}button.danger{background:#63343a;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{background:#0c1524;border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:10px;font:inherit;max-width:100%}
+textarea{width:100%;min-height:130px;font: .84rem/1.5 ui-monospace,monospace}
+label{font-size:.83rem;color:var(--mut);display:block;margin-bottom:5px}.field{min-width:130px;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#0d1727;border:1px solid var(--line);border-radius:12px;padding:12px}.kpi b{display:block;font-size:1.45rem}.kpi span{font-size:.78rem;color:var(--mut)}
+.balls{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.ball{width:39px;height:39px;border-radius:50%;background:#f4f6fa;color:#111;display:grid;place-items:center;font-weight:850;box-shadow:inset 0 -3px 0 #0002}.ball.ss{background:var(--gold)}.ball.j{background:#9ecbff}
+.ticket{padding:13px;border:1px solid var(--line);border-radius:12px;margin:10px 0;background:#0e192a}.ticket small{color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}th,td{text-align:left;padding:9px 7px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:650}
+.tablewrap{overflow:auto;max-height:360px}.heat{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.cell{padding:7px 1px;text-align:center;border-radius:6px;font-size:.75rem;background:#23334b;border:1px solid #ffffff0a}
+.barlist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}@media(max-width:500px){.barlist{grid-template-columns:1fr}}
+.baritem{display:grid;grid-template-columns:30px 1fr 35px;gap:8px;align-items:center;font-size:.82rem}.track{height:9px;background:#0a1422;border-radius:99px;overflow:hidden}.fill{height:100%;border-radius:99px;background:var(--red)}
+.status{padding:10px 12px;border-radius:9px;background:#0d1727;color:var(--mut);font-size:.85rem;margin-top:10px}
+.warn{border-left:3px solid var(--gold);padding:10px 12px;background:#211d14;color:#e7d7ae;border-radius:0 8px 8px 0;font-size:.84rem}
+.ok{color:var(--green)}.err{color:var(--red)}.hidden{display:none}.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:3px 8px;color:var(--mut);font-size:.75rem}
+footer{color:var(--mut);font-size:.8rem;text-align:center;padding:25px 0}
 </style>
 </head>
-<body>
-<h1>🎯 SuperEnalotto Generator</h1>
-<div class="sub">3 schedine (6 numeri + SuperStar) da analisi statistica dello storico estrazioni</div>
-
-<div class="card">
-  <h2>1 · Storico estrazioni</h2>
-  <div id="status">⏳ Carico lo storico…</div>
-  <div style="margin-top:10px">
-    <label class="sub" for="periodo">Periodo da analizzare:</label>
-    <select id="periodo" onchange="render();genera()" style="background:#0b0f18;color:var(--ink);border:1px solid #2a3446;border-radius:8px;padding:8px;font-size:.95rem">
-      <option value="50">Ultime 50 estrazioni</option>
-      <option value="100" selected>Ultime 100 estrazioni</option>
-      <option value="300">Ultime 300 estrazioni</option>
-      <option value="1000">Ultime 1000 estrazioni</option>
-      <option value="0">Tutto lo storico (dal 2006)</option>
-    </select>
-  </div>
-  <button class="sec" onclick="caricaDati(true)">🔄 Ricarica</button>
+<body><main class="wrap">
+<header class="hero"><div class="eyebrow">Strumento statistico personale</div><h1>🎯 SuperEnalotto <span style="color:var(--gold)">PRO</span></h1><p class="lead">Archivio estrazioni, frequenze, ritardi, generazione di combinazioni, simulazione e strumenti per gestire i tuoi dati. Archivio completo dal 2006, aggiornato automaticamente ogni sera.</p></header>
+<nav><a href="#dashboard">Dashboard</a><a href="#generator">Schedine</a><a href="#stats">Statistiche</a><a href="#archive">Archivio</a><a href="#data">Gestione dati</a></nav>
+<section id="dashboard" class="grid">
+<div class="card"><div class="row between"><h2>Panoramica archivio</h2><span class="pill" id="sourceTag">Archivio integrato</span></div><div class="kpis">
+<div class="kpi"><b id="kDraws">0</b><span>Estrazioni caricate</span></div><div class="kpi"><b id="kLatest">—</b><span>Ultimo concorso</span></div><div class="kpi"><b id="kHot">—</b><span>Più frequente</span></div><div class="kpi"><b id="kCold">—</b><span>Ritardo maggiore</span></div></div><div class="status" id="status">Caricamento archivio…</div></div>
+<div class="card half"><h2>Numeri più frequenti</h2><div id="topFreq" class="barlist"></div></div>
+<div class="card half"><h2>Numeri con ritardo maggiore</h2><div id="topDelay" class="barlist"></div></div>
+</section>
+<section id="generator" class="grid" style="margin-top:14px">
+<div class="card"><div class="row between"><h2>Generatore schedine</h2><span class="pill">6 numeri + Jolly informativo + SuperStar</span></div>
+<div class="row">
+<div class="field"><label for="strategy">Strategia</label><select id="strategy"><option value="mix">Bilanciata (frequenza + ritardo)</option><option value="hot">Numeri più frequenti</option><option value="cold">Ritardatari</option><option value="random">Casuale uniforme</option></select></div>
+<div class="field"><label for="count">Numero schedine</label><input id="count" type="number" min="1" max="20" value="3"></div>
+<div class="field"><label for="window">Periodo analizzato</label><select id="window"><option value="100">Ultime 100 estrazioni</option><option value="50">Ultime 50 estrazioni</option><option value="300">Ultime 300 estrazioni</option><option value="1000">Ultime 1000 estrazioni</option><option value="all">Tutto lo storico (dal 2006)</option></select></div>
+</div><label style="margin-top:12px;display:flex;gap:8px;align-items:center;color:var(--txt)"><input type="checkbox" id="smart" checked> Numeri tutti diversi tra le schedine e combinazioni poco giocate (niente date, sequenze, multipli)</label><div class="row" style="margin-top:12px"><button id="generate">🎲 Genera schedine</button><button class="secondary" id="copyTickets">Copia schedine</button><button class="secondary" id="printTickets">Stampa</button></div>
+<div id="tickets" aria-live="polite"><p class="muted">Genera le schedine per visualizzarle qui.</p></div>
 </div>
-
-<div class="card">
-  <h2>2 · Schedine generate</h2>
-  <button onclick="genera()">🎲 Genera 3 schedine</button>
-  <div id="tickets"></div>
-</div>
-
-<div class="card">
-  <h2>Mappa frequenze (1–90)</h2>
-  <div class="sub">Rosso = numeri caldi · Bordo blu = ritardatari · tocca un numero per i dettagli</div>
-  <div id="heat" class="grid" style="margin-top:8px"></div>
-</div>
-
-<div class="card">
-  <h2>Ultime estrazioni</h2>
-  <table id="last"></table>
-</div>
-
-<p class="warn">Ogni estrazione è indipendente: nessun algoritmo aumenta davvero la probabilità di vincita (6 su 90 ≈ 1 su 622 milioni). Lo strumento organizza le statistiche storiche per scegliere numeri in modo ragionato, a scopo di intrattenimento. Gioca responsabilmente.</p>
-
+<div class="card"><h2>Simulatore teorico</h2><p class="hint">Simula quante combinazioni casuali vengono create e quante volte si raggiunge un certo numero di corrispondenze con una combinazione obiettivo inserita da te.</p>
+<div class="row"><div class="field"><label>Combinazione obiettivo (6 numeri)</label><input id="target" placeholder="es. 4 17 28 39 62 85"></div><div class="field"><label>Numero simulazioni</label><select id="simCount"><option>1000</option><option selected>10000</option><option>50000</option></select></div></div>
+<button id="simulate" style="margin-top:10px">Avvia simulazione</button><div id="simResult" class="status">Nessuna simulazione eseguita.</div>
+</div></section>
+<section id="stats" class="grid" style="margin-top:14px">
+<div class="card"><div class="row between"><h2>Distribuzione frequenze 1–90</h2><span class="pill">Numeri principali</span></div><div id="heat" class="heat"></div><p class="hint">Intensità rossa = frequenza relativa nel periodo selezionato. Il ritardo è mostrato nella descrizione del numero.</p></div>
+<div class="card half"><h2>Statistiche di composizione</h2><div id="composition"></div></div>
+<div class="card half"><h2>Frequenze SuperStar</h2><div id="ssFreq" class="barlist"></div></div>
+</section>
+<section id="archive" class="grid" style="margin-top:14px"><div class="card"><div class="row between"><h2>Ultime estrazioni</h2><span class="pill" id="archiveCount"></span></div><div class="tablewrap"><table id="drawTable"><thead><tr><th>Concorso</th><th>Data</th><th>Numeri</th><th>Jolly</th><th>SuperStar</th></tr></thead><tbody></tbody></table></div></div></section>
+<section id="data" class="grid" style="margin-top:14px">
+<div class="card half"><h2>Importa estrazioni</h2><p class="hint">Una riga per estrazione. Formati accettati: <code>6 numeri Jolly SuperStar</code> oppure <code>concorso 6 numeri Jolly SuperStar</code>. Puoi separare i valori con spazi, virgole o punto e virgola. Inserisci le più recenti in alto.</p>
+<textarea id="importText" placeholder="3 17 25 44 61 88 12 54&#10;..."></textarea><div class="row" style="margin-top:8px"><button id="importBtn">Importa e unisci</button><button class="secondary" id="replaceBtn">Sostituisci archivio</button></div><p class="hint">Per evitare importazioni errate, le righe non riconosciute vengono ignorate e il riepilogo mostra quante sono state caricate.</p></div>
+<div class="card half"><h2>Esporta e manutenzione</h2><div class="row"><button id="exportCsv">Esporta CSV</button><button class="secondary" id="exportJson">Backup JSON</button><label class="filebtn secondary" for="jsonFile">Ripristina JSON</label><input class="hidden" id="jsonFile" type="file" accept=".json,application/json"></div><hr style="border:0;border-top:1px solid var(--line);margin:17px 0"><button class="secondary" id="downloadHtml">Scarica copia HTML</button><button class="danger" id="reset">Ripristina archivio iniziale</button><p class="hint">I dati importati vengono salvati localmente nel browser del dispositivo. Il backup JSON permette di trasferirli su un altro dispositivo.</p></div>
+</section>
+<div class="card" style="margin-top:14px"><h2>Nota importante sulle probabilità</h2><div class="warn">Le estrazioni sono indipendenti. Frequenze e ritardi descrivono soltanto il passato e non permettono di prevedere i numeri futuri né aumentano la probabilità di vincita. Ogni combinazione di 6 numeri su 90 ha probabilità 1 su 622.614.630 di centrare il 6. Il generatore è uno strumento statistico e di intrattenimento, non una previsione. Gioca responsabilmente.</div></div>
+<footer>SuperEnalotto PRO · Elaborazione locale nel browser · Nessuna garanzia di vincita</footer>
+</main>
 <script>
-let tutte=[];
-const fmt=d=>d.split('-').reverse().join('/');
-function st(m){document.getElementById('status').innerHTML=m}
-function draws(){const n=+document.getElementById('periodo').value;return n?tutte.slice(0,n):tutte}
+const BASE_DATE='13/11/2026';
+const BASE=`182 23 24 55 56 82 86 46 38
+181 3 12 32 63 79 82 83 19
+180 47 73 74 78 82 90 4 64
+179 38 41 54 59 80 85 50 39
+178 5 20 28 47 50 67 87 14
+177 17 21 28 29 51 56 30 90
+176 11 13 14 47 52 71 43 68
+175 4 18 20 33 46 78 7 2
+174 19 24 49 62 64 85 27 83
+173 13 20 41 60 77 85 44 60
+172 23 34 44 48 64 70 29 28
+171 11 17 32 50 73 80 62 24
+170 29 34 41 66 81 83 37 21
+169 3 13 14 18 62 82 46 84
+168 13 25 37 45 50 72 3 49
+167 23 25 37 55 77 86 80 50
+166 35 41 44 54 55 76 58 55
+165 16 24 46 49 77 80 53 52
+164 4 21 30 33 38 78 41 34
+163 26 41 53 61 69 79 39 41
+162 18 35 44 56 76 82 49 15
+161 29 52 57 60 65 72 62 50
+160 22 32 34 70 74 77 30 14
+159 5 12 18 25 28 42 66 76
+158 2 31 55 56 73 84 77 41
+157 5 12 28 41 56 66 73 42
+156 16 26 28 30 43 72 5 32
+155 52 54 55 64 68 78 31 6
+154 10 18 26 33 39 45 89 48
+153 1 28 31 50 63 85 86 48
+152 12 42 57 65 76 77 21 54
+151 20 42 45 48 68 85 49 41
+150 29 37 41 43 74 86 25 78
+149 6 7 16 35 46 54 21 51
+148 3 12 18 32 47 54 69 28
+147 3 7 14 40 78 81 1 54
+146 8 13 16 52 64 70 17 21
+145 2 17 39 59 63 89 62 62
+144 23 26 41 52 59 85 49 47
+143 12 24 28 32 37 78 40 16
+142 8 44 60 73 86 89 57 42
+141 8 11 15 60 68 76 9 90
+140 42 47 59 64 67 71 88 75
+139 12 17 45 59 74 77 62 62
+138 4 8 27 62 70 79 60 55
+137 2 27 28 50 75 84 32 40
+136 15 36 62 67 69 70 32 15
+135 2 16 23 31 72 85 82 14
+134 12 25 27 28 39 57 42 13
+133 14 18 26 51 64 71 77 49`;
+const initial=BASE.split('\n').map(l=>{let x=l.trim().split(/\s+/).map(Number);return {c:x[0],n:x.slice(1,7),j:x[7],ss:x[8],date:''}});
+let draws=[...initial],generated=[];
+const $=id=>document.getElementById(id);
+function setStatus(msg,cls=''){ $('status').innerHTML=msg; $('status').className='status '+cls}
+function validDraw(d){return d&&Array.isArray(d.n)&&d.n.length===6&&d.n.every(x=>Number.isInteger(x)&&x>=1&&x<=90)&&new Set(d.n).size===6&&Number.isInteger(d.j)&&d.j>=1&&d.j<=90&&!d.n.includes(d.j)&&Number.isInteger(d.ss)&&d.ss>=1&&d.ss<=90}
+function key(d){return [...d.n].sort((a,b)=>a-b).join('-')+'|'+d.j+'|'+d.ss}
+function dedup(a){let s=new Set;return a.filter(d=>{let k=key(d);if(s.has(k))return false;s.add(k);return true})}
+function stats(data=draws){let f=Array(91).fill(0),delay=Array(91).fill(data.length),sf=Array(91).fill(0),sd=Array(91).fill(data.length),ev=0,low=0,sum=0;
+data.forEach((d,i)=>{d.n.forEach(n=>{f[n]++;if(delay[n]===data.length)delay[n]=i;if(n%2===0)ev++;if(n<=45)low++;sum+=n});sf[d.ss]++;if(sd[d.ss]===data.length)sd[d.ss]=i});
+return {f,delay,sf,sd,ev,low,sum}}
+function period(){let v=$('window').value;return v==='all'?draws:draws.slice(0,Number(v))}
+function rank(a){return Array.from({length:90},(_,i)=>i+1).sort((x,y)=>a[y]-a[x]||x-y)}
+function renderBars(id,arr,unit=''){let max=Math.max(1,...arr.map(x=>x.v));$(id).innerHTML=arr.map(x=>`<div class="baritem"><b>${x.n}</b><div class="track"><div class="fill" style="width:${100*x.v/max}%"></div></div><span>${x.v}${unit}</span></div>`).join('')}
+function render(){let s=stats(period()),r=rank(s.f),rd=rank(s.delay);$('kDraws').textContent=draws.length;$('kLatest').textContent=draws[0]?.c??'—';$('kHot').textContent=r[0]+' ('+s.f[r[0]]+')';$('kCold').textContent=rd[0]+' ('+s.delay[rd[0]]+')';
+renderBars('topFreq',r.slice(0,8).map(n=>({n,v:s.f[n]})));renderBars('topDelay',rd.slice(0,8).map(n=>({n,v:s.delay[n]})));
+let mx=Math.max(1,...s.f);$('heat').innerHTML=Array.from({length:90},(_,i)=>{let n=i+1,a=s.f[n]/mx;return `<div class="cell" title="Numero ${n}: ${s.f[n]} uscite, ritardo ${s.delay[n]} estrazioni" style="background:rgba(240,107,102,${.08+a*.75})">${n}</div>`}).join('');
+let P=period(),total=P.length*6,even=s.ev/total*100,low=s.low/total*100,avg=s.sum/total;
+$('composition').innerHTML=`<p>Numeri pari: <b>${even.toFixed(1)}%</b> · dispari: <b>${(100-even).toFixed(1)}%</b></p><p>Numeri da 1 a 45: <b>${low.toFixed(1)}%</b> · da 46 a 90: <b>${(100-low).toFixed(1)}%</b></p><p>Media aritmetica dei numeri estratti: <b>${avg.toFixed(2)}</b></p><p>Estrazioni considerate: <b>${P.length}</b></p>`;
+let sr=rank(s.sf);renderBars('ssFreq',sr.slice(0,8).map(n=>({n,v:s.sf[n]})));
+$('drawTable').querySelector('tbody').innerHTML=draws.slice(0,100).map(d=>`<tr><td>${d.c??'—'}</td><td>${d.date||'—'}</td><td>${d.n.join(' · ')}</td><td>${d.j}</td><td>${d.ss}</td></tr>`).join('');
+$('archiveCount').textContent=`Mostrate ${Math.min(100,draws.length)} di ${draws.length}`;
+$('sourceTag').textContent=online?'Archivio online · aggiornato ogni sera':'Archivio integrato';
+}
+function weightedPick(weights,k,ex){let w=weights.slice(),out=[];w[0]=0;if(ex)ex.forEach(x=>w[x]=0);while(out.length<k){let total=w.reduce((a,b)=>a+b,0),r=Math.random()*total,idx=1;for(;idx<=90;idx++){r-=w[idx];if(r<=0)break}if(idx>90)idx=90;out.push(idx);w[idx]=0}return out.sort((a,b)=>a-b)}
+function poco_giocata(n){const ev=n.filter(x=>x%2===0).length,dec=new Set(n.map(x=>Math.floor((x-1)/10))).size,sopra=n.filter(x=>x>31).length;let c=0;for(let i=1;i<6;i++)if(n[i]===n[i-1]+1)c++;const mul=[5,7,10].some(m=>n.filter(x=>x%m===0).length>=4),fin=new Set(n.map(x=>x%10)).size;return ev>=2&&ev<=4&&dec>=4&&sopra>=3&&c<=1&&!mul&&fin>=4}
+function makeTickets(){let data=period(),s=stats(data),mx=Math.max(...s.f),md=Math.max(...s.delay),mode=$('strategy').value,n=Math.max(1,Math.min(20,Number($('count').value)||3)),out=[];
+let hot=s.f.map(v=>Math.pow(v+1,2)),cold=s.delay.map(v=>Math.pow(v+1,1.5)),mix=s.f.map((v,i)=>.5*v/mx+.5*s.delay[i]/md+.05);
+const smart=$('smart').checked,usati=new Set(),ssUsati=new Set();
+function pickSmart(w,u){const ex=smart&&u.size<=78?u:null;for(let t=0;t<(smart?2000:1);t++){const p=weightedPick(w,6,ex);if(!smart||poco_giocata(p)){if(smart)p.forEach(x=>u.add(x));return p}}const p=weightedPick(w,6,ex);if(smart)p.forEach(x=>u.add(x));return p}
+for(let i=0;i<n;i++){let weights=mode==='hot'?hot:mode==='cold'?cold:mode==='random'?Array(91).fill(1):mix;let nums=pickSmart(weights,usati);let ssweights=mode==='hot'?s.sf.map(v=>(v+1)**2):mode==='cold'?s.sd.map(v=>(v+1)**1.5):mode==='random'?Array(91).fill(1):s.sf.map((v,i)=>v+s.sd[i]+1);let ss=weightedPick(ssweights,1,smart&&ssUsati.size<80?ssUsati:null)[0];ssUsati.add(ss);out.push({nums,ss,mode})}generated=out;renderTickets()}
+function renderTickets(){$('tickets').innerHTML=generated.map((t,i)=>`<div class="ticket"><div class="row between"><h3>Schedina ${i+1}</h3><small>${$('strategy').selectedOptions[0].text}</small></div><div class="balls">${t.nums.map(n=>`<span class="ball">${n}</span>`).join('')}<span class="muted" style="margin-left:8px">SuperStar</span><span class="ball ss">${t.ss}</span></div></div>`).join('')}
+function parseImport(text){let out=[],bad=0;for(let line of text.split(/\r?\n/)){let a=(line.match(/\d+/g)||[]).map(Number);if(a.length===8){out.push({c:null,n:a.slice(0,6),j:a[6],ss:a[7],date:''})}else if(a.length>=9){out.push({c:a[0],n:a.slice(1,7),j:a[7],ss:a[8],date:''})}else{if(line.trim())bad++;continue}let d=out[out.length-1];if(!validDraw(d)){out.pop();bad++}}return {out,bad}}
+function download(name,content,type){let blob=new Blob([content],{type}),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('generate').onclick=makeTickets;
+$('window').onchange=()=>{render();makeTickets()};
+$('copyTickets').onclick=async()=>{if(!generated.length)return alert('Genera prima le schedine.');let t=generated.map((x,i)=>`Schedina ${i+1}: ${x.nums.join(' ')} | SuperStar ${x.ss}`).join('\n');try{await navigator.clipboard.writeText(t);alert('Schedine copiate.')}catch(e){prompt('Copia le schedine:',t)}};
+$('printTickets').onclick=()=>{if(!generated.length)return alert('Genera prima le schedine.');let w=open('','_blank');w.document.write('<pre>'+generated.map((x,i)=>`Schedina ${i+1}: ${x.nums.join(' - ')} | SuperStar ${x.ss}`).join('\n\n')+'</pre>');w.print()};
+$('importBtn').onclick=()=>{let p=parseImport($('importText').value);if(!p.out.length)return alert('Nessuna riga valida. Controlla il formato.');draws=dedup([...p.out,...draws]);save();render();setStatus(`Importate ${p.out.length} righe valide; ${p.bad} ignorate. Archivio totale: ${draws.length}.`,'ok')};
+$('replaceBtn').onclick=()=>{let p=parseImport($('importText').value);if(!p.out.length)return alert('Nessuna riga valida.');if(!confirm(`Sostituire l'archivio con ${p.out.length} estrazioni?`))return;draws=dedup(p.out);save();render();setStatus(`Archivio sostituito: ${draws.length} estrazioni; ${p.bad} righe ignorate.`,'ok')};
 
-async function caricaDati(forza){
-  st('⏳ Carico lo storico…');
-  try{
-    const r=await fetch('data/estrazioni.json'+(forza?'?t='+Date.now():''),{cache:forza?'no-store':'default'});
-    if(!r.ok)throw new Error(r.status);
-    const j=await r.json();
-    tutte=j.estrazioni.map(e=>({c:e.concorso,d:e.data,n:e.numeri,j:e.jolly,ss:e.superstar}));
-    const u=tutte[0];
-    st(`✅ <b>${tutte.length}</b> estrazioni dal 2006 · ultima: n. ${u.c} del ${fmt(u.d)}<br><span class="sub">Archivio aggiornato automaticamente il ${new Date(j.aggiornato).toLocaleString('it-IT')}</span>`);
-    render();genera();
-  }catch(e){
-    st('⚠️ Impossibile leggere lo storico. Apri la pagina dal suo indirizzo GitHub Pages (non dal file scaricato).');
-  }
+$('exportCsv').onclick=()=>download('superenalotto-archivio.csv','concorso,data,n1,n2,n3,n4,n5,n6,jolly,superstar\n'+draws.map(d=>[d.c||'',d.date||'',...d.n,d.j,d.ss].join(',')).join('\n'),'text/csv;charset=utf-8');
+$('exportJson').onclick=()=>download('superenalotto-backup.json',JSON.stringify({version:1,exported:new Date().toISOString(),draws},null,2),'application/json');
+$('jsonFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let o=JSON.parse(await f.text()),a=Array.isArray(o)?o:o.draws;if(!Array.isArray(a)||!a.length||!a.every(validDraw))throw Error('Formato non valido');if(!confirm(`Ripristinare ${a.length} estrazioni dal backup?`))return;draws=dedup(a);save();render();setStatus(`Backup ripristinato: ${draws.length} estrazioni.`,'ok')}catch(err){alert('Backup non valido: '+err.message)}e.target.value=''};
+$('reset').onclick=async()=>{if(!confirm('Eliminare le estrazioni importate a mano e tornare all’archivio online?'))return;try{localStorage.removeItem('sepro_archive')}catch(e){}await avvio();setStatus('Archivio ripristinato.','ok')};
+$('downloadHtml').onclick=()=>download('superenalotto-pro.html','<!doctype html>\n'+document.documentElement.outerHTML,'text/html;charset=utf-8');
+$('simulate').onclick=()=>{let target=($('target').value.match(/\d+/g)||[]).map(Number),n=Number($('simCount').value);if(target.length!==6||target.some(x=>x<1||x>90)||new Set(target).size!==6){$('simResult').textContent='Inserisci esattamente 6 numeri distinti da 1 a 90.';return}let counts=Array(7).fill(0),set=new Set(target);for(let i=0;i<n;i++){let a=weightedPick(Array(91).fill(1),6);let hits=a.filter(x=>set.has(x)).length;counts[hits]++}$('simResult').innerHTML=`Simulazioni: <b>${n.toLocaleString('it-IT')}</b><br>`+counts.map((v,i)=>`${i} numeri: ${v.toLocaleString('it-IT')} (${(100*v/n).toFixed(3)}%)`).join('<br>')};
+let online=false;
+async function avvio(){
+  draws=[...initial];online=false;let info='';
+  try{const r=await fetch('data/estrazioni.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();
+    draws=j.estrazioni.map(e=>({c:e.concorso,n:e.numeri,j:e.jolly,ss:e.superstar,date:e.data.split('-').reverse().join('/')})).filter(validDraw);online=true;
+    info=`✅ <b>${draws.length.toLocaleString('it-IT')}</b> estrazioni dal 2006 · ultima n. ${draws[0].c} del ${draws[0].date} · archivio aggiornato il ${new Date(j.aggiornato).toLocaleString('it-IT')}`;
+  }catch(e){info=`⚠️ Archivio online non raggiungibile: uso ${draws.length} estrazioni integrate fino al ${BASE_DATE}.`}
+  try{let saved=JSON.parse(localStorage.getItem('sepro_archive'));if(Array.isArray(saved)&&saved.length&&saved.every(validDraw)){const k=new Set(draws.map(key)),extra=saved.filter(d=>!k.has(key(d)));if(extra.length){draws=[...extra,...draws];info+=` · ${extra.length} importate a mano`}}}catch(e){}
+  render();setStatus(info,online?'ok':'');makeTickets();
 }
-
-function stats(D){
-  const L=D.length,freq=Array(91).fill(0),delay=Array(91).fill(L),ssF=Array(91).fill(0),ssD=Array(91).fill(L);
-  D.forEach((d,i)=>{d.n.forEach(x=>{freq[x]++;if(delay[x]===L)delay[x]=i});ssF[d.ss]++;if(ssD[d.ss]===L)ssD[d.ss]=i});
-  // il ritardo si calcola sempre su tutto lo storico
-  const rit=Array(91).fill(tutte.length),ssR=Array(91).fill(tutte.length);
-  tutte.forEach((d,i)=>{d.n.forEach(x=>{if(rit[x]===tutte.length)rit[x]=i});if(ssR[d.ss]===tutte.length)ssR[d.ss]=i});
-  return{freq,delay:rit,ssF,ssD:ssR};
-}
-
-function wpick(weights,k,escludi=new Set()){
-  const res=[],w=weights.slice();w[0]=0;escludi.forEach(x=>w[x]=0);
-  while(res.length<k){const tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot;
-    for(let i=1;i<=90;i++){r-=w[i];if(r<=0){res.push(i);w[i]=0;break}}}
-  return res.sort((a,b)=>a-b);
-}
-// Equilibrio + "anti-condivisione": evita le combinazioni giocate da molti (date di nascita, sequenze, multipli)
-function balanced(n){
-  const ev=n.filter(x=>x%2===0).length,dec=new Set(n.map(x=>Math.floor((x-1)/10)));
-  const sopra31=n.filter(x=>x>31).length;
-  let consec=0;for(let i=1;i<n.length;i++)if(n[i]===n[i-1]+1)consec++;
-  const multipli=[5,7,10].some(m=>n.filter(x=>x%m===0).length>=4);
-  const fin=new Set(n.map(x=>x%10)).size;
-  return ev>=2&&ev<=4&&dec.size>=4&&sopra31>=3&&consec<=1&&!multipli&&fin>=4;
-}
-function pickBalanced(w,escludi){for(let t=0;t<2000;t++){const p=wpick(w,6,escludi);if(balanced(p))return p}return wpick(w,6,escludi)}
-
-function genera(){
-  if(!tutte.length)return;
-  const{freq,delay,ssF,ssD}=stats(draws());
-  const maxF=Math.max(...freq.slice(1),1),maxD=Math.max(...delay.slice(1),1);
-  const hotW=freq.map(f=>Math.pow(f/maxF+0.05,3));
-  const coldW=delay.map(d=>Math.pow(d/maxD+0.05,3));
-  const mixW=freq.map((f,i)=>0.5*(f/maxF)+0.5*(delay[i]/maxD)+0.05);
-  const mF=Math.max(...ssF.slice(1),1),mD=Math.max(...ssD.slice(1),1);
-  const ssHot=ssF.map(f=>Math.pow(f/mF+0.05,3)),ssCold=ssD.map(d=>Math.pow(d/mD+0.05,3)),ssMix=ssF.map((f,i)=>f/mF+ssD[i]/mD+0.05);
-  const usati=new Set(),prendi=w=>{const p=pickBalanced(w,usati);p.forEach(x=>usati.add(x));return p};
-  const T=[
-    {t:'🔥 Numeri caldi',d:'più frequenti nel periodo',n:prendi(hotW),s:ssHot},
-    {t:'❄️ Ritardatari',d:'assenti da più estrazioni',n:prendi(coldW),s:ssCold},
-    {t:'⚖️ Bilanciata',d:'mix frequenza + ritardo',n:prendi(mixW),s:ssMix}
-  ];
-  const ssUsati=new Set();T.forEach(x=>{x.ss=wpick(x.s,1,ssUsati)[0];ssUsati.add(x.ss)});
-  document.getElementById('tickets').innerHTML='<div class="sub">18 numeri tutti diversi · combinazioni poco giocate (niente date di nascita, sequenze o multipli)</div>'+T.map(x=>{const ss=x.ss;
-    return `<div class="ticket"><h3>${x.t} <span class="lbl">${x.d}</span></h3><div class="balls">${x.n.map(v=>`<div class="ball">${v}</div>`).join('')}<span class="lbl">SuperStar</span><div class="ball ss">${ss}</div></div></div>`}).join('');
-}
-
-function render(){
-  const D=draws(),{freq,delay}=stats(D),mx=Math.max(...freq.slice(1),1),md=Math.max(...delay.slice(1),1);
-  let h='';for(let i=1;i<=90;i++){const a=freq[i]/mx,c=delay[i]/md;
-    h+=`<div class="cell" onclick="st('Numero <b>${i}</b>: uscito ${freq[i]} volte nel periodo · assente da ${delay[i]} estrazioni')" style="background:rgba(229,83,75,${a*.85});box-shadow:inset 0 0 0 2px rgba(78,161,243,${c})">${i}</div>`}
-  document.getElementById('heat').innerHTML=h;
-  document.getElementById('last').innerHTML='<tr><th>N.</th><th>Data</th><th>Numeri</th><th>J</th><th>SS</th></tr>'+tutte.slice(0,10).map(d=>`<tr><td>${d.c}</td><td>${fmt(d.d).slice(0,5)}</td><td>${d.n.join(' ')}</td><td>${d.j}</td><td>${d.ss}</td></tr>`).join('');
-}
-caricaDati();
-</script>
-</body>
-</html>
+function save(){try{const k=new Set(initial.map(key));localStorage.setItem('sepro_archive',JSON.stringify(draws.slice(0,500)))}catch(e){}}
+avvio();
+</script></body></html>
