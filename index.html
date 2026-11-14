@@ -44,12 +44,12 @@ footer{color:var(--mut);font-size:.8rem;text-align:center;padding:25px 0}
 <div class="card half"><h2>Numeri con ritardo maggiore</h2><div id="topDelay" class="barlist"></div></div>
 </section>
 <section id="generator" class="grid" style="margin-top:14px">
-<div class="card"><div class="row between"><h2>Generatore schedine</h2><span class="pill">20 combinazioni · budget massimo 20 €</span></div>
+<div class="card"><div class="row between"><h2>Generatore schedine</h2><span class="pill" id="budgetPill">20 combinazioni · budget 20 €</span></div>
 <div class="row">
 <div class="field"><label for="strategy">Strategia</label><select id="strategy"><option value="mix">Bilanciata (frequenza + ritardo)</option><option value="hot">Numeri più frequenti</option><option value="cold">Ritardatari</option><option value="random">Casuale uniforme</option></select></div>
-<div class="field"><label for="count">Combinazioni</label><input id="count" type="number" min="1" max="20" value="20"></div>
+<div class="field"><label for="budget">Budget (€)</label><input id="budget" type="number" min="1" max="500" step="0.5" value="20" inputmode="decimal"></div><div class="field"><label for="count">Numero schedine</label><input id="count" type="number" min="1" max="20" value="20" inputmode="numeric"></div>
 <div class="field"><label for="window">Periodo analizzato</label><select id="window"><option value="100">Ultime 100 estrazioni</option><option value="50">Ultime 50 estrazioni</option><option value="300">Ultime 300 estrazioni</option><option value="1000">Ultime 1000 estrazioni</option><option value="all">Tutto lo storico (dal 2006)</option></select></div>
-</div><div class="row" style="margin-top:12px;align-items:center"><label style="display:flex;gap:8px;align-items:center;color:var(--txt);margin:0"><input id="withStar" type="checkbox" style="width:auto"> Aggiungi SuperStar a ogni combinazione (+0,50 € ciascuna)</label></div><div class="status" id="budgetInfo">20 combinazioni × 1,00 € = 20,00 € · SuperStar escluso</div><div class="row" style="margin-top:12px"><button id="generate">🧠 Ottimizza 20 combinazioni</button><button class="secondary" id="copyTickets">Copia schedine</button><button class="secondary" id="printTickets">Stampa</button></div>
+</div><div class="row" style="margin-top:12px;align-items:center"><label style="display:flex;gap:8px;align-items:center;color:var(--txt);margin:0"><input id="withStar" type="checkbox" style="width:auto"> Aggiungi SuperStar a ogni combinazione (+0,50 € ciascuna)</label><label style="display:flex;gap:8px;align-items:center;color:var(--txt);margin:0"><input id="useAll" type="checkbox" style="width:auto" checked> Usa tutto il budget (numero massimo di schedine)</label></div><div class="status" id="budgetInfo">20 combinazioni × 1,00 € = 20,00 € · SuperStar escluso</div><div class="row" style="margin-top:12px"><button id="generate">🧠 Ottimizza combinazioni</button><button class="secondary" id="copyTickets">Copia schedine</button><button class="secondary" id="printTickets">Stampa</button></div>
 <div id="tickets" aria-live="polite"><p class="muted">Genera le schedine per visualizzarle qui.</p></div>
 </div>
 <div class="card"><h2>Simulatore teorico</h2><p class="hint">Simula quante combinazioni casuali vengono create e quante volte si raggiunge un certo numero di corrispondenze con una combinazione obiettivo inserita da te.</p>
@@ -67,7 +67,7 @@ footer{color:var(--mut);font-size:.8rem;text-align:center;padding:25px 0}
 <textarea id="importText" placeholder="3 17 25 44 61 88 12 54&#10;..."></textarea><div class="row" style="margin-top:8px"><button id="importBtn">Importa e unisci</button><button class="secondary" id="replaceBtn">Sostituisci archivio</button></div><p class="hint">Per evitare importazioni errate, le righe non riconosciute vengono ignorate e il riepilogo mostra quante sono state caricate.</p></div>
 <div class="card half"><h2>Esporta e manutenzione</h2><div class="row"><button id="exportCsv">Esporta CSV</button><button class="secondary" id="exportJson">Backup JSON</button><label class="filebtn secondary" for="jsonFile">Ripristina JSON</label><input class="hidden" id="jsonFile" type="file" accept=".json,application/json"></div><hr style="border:0;border-top:1px solid var(--line);margin:17px 0"><button class="secondary" id="downloadHtml">Scarica copia HTML</button><button class="danger" id="reset">Ripristina archivio iniziale</button><p class="hint">I dati importati vengono salvati localmente nel browser del dispositivo. Il backup JSON permette di trasferirli su un altro dispositivo.</p></div>
 </section>
-<div class="card" style="margin-top:14px"><h2>Nota importante sulle probabilità</h2><div class="warn">Le estrazioni sono indipendenti. Frequenze e ritardi descrivono soltanto il passato e non permettono di prevedere i numeri futuri né aumentano la probabilità di vincita. Ogni combinazione di 6 numeri su 90 ha probabilità 1 su 622.614.630 di centrare il 6. Il generatore ottimizza la diversificazione del gruppo di combinazioni e riduce le sovrapposizioni tra schedine: non individua numeri più probabili e non prevede l'estrazione. Gioca responsabilmente.</div><p class="hint">Prezzi usati nel calcolo: 1,00 € per combinazione semplice e +0,50 € per SuperStar su ciascuna combinazione, secondo le informazioni ufficiali del gioco. Con 20 €: 20 combinazioni senza SuperStar oppure fino a 13 combinazioni con SuperStar (19,50 €).</p></div>
+<div class="card" style="margin-top:14px"><h2>Nota importante sulle probabilità</h2><div class="warn">Le estrazioni sono indipendenti. Frequenze e ritardi descrivono soltanto il passato e non permettono di prevedere i numeri futuri né aumentano la probabilità di vincita. Ogni combinazione di 6 numeri su 90 ha probabilità 1 su 622.614.630 di centrare il 6. Il generatore ottimizza la diversificazione del gruppo di combinazioni e riduce le sovrapposizioni tra schedine: non individua numeri più probabili e non prevede l'estrazione. Gioca responsabilmente.</div><p class="hint">Prezzi usati nel calcolo: 1,00 € per combinazione semplice e +0,50 € per SuperStar su ciascuna combinazione, secondo le informazioni ufficiali del gioco. Esempio con 20 €: 20 combinazioni senza SuperStar oppure 13 con SuperStar (19,50 €).</p></div>
 <footer>SuperEnalotto AI PRO 2.0 · Elaborazione locale nel browser · Nessuna garanzia di vincita</footer>
 </main>
 <script>
@@ -146,13 +146,18 @@ $('archiveCount').textContent=`Mostrate ${Math.min(100,draws.length)} di ${draws
 $('sourceTag').textContent=online?'Archivio online · aggiornato ogni sera':'Archivio integrato';
 }
 function weightedPick(weights,k){let w=weights.slice(),out=[];while(out.length<k){let total=w.reduce((a,b)=>a+b,0),r=Math.random()*total,idx=1;for(;idx<=90;idx++){r-=w[idx];if(r<=0)break}if(idx>90)idx=90;out.push(idx);w[idx]=0}return out.sort((a,b)=>a-b)}
+const eur=v=>v.toFixed(2).replace('.',',')+' €';
 function updateBudget(){
-let star=$('withStar').checked;
-let max=star?13:20;
-let count=Math.max(1,Math.min(max,Number($('count').value)||20));
-$('count').max=String(max);$('count').value=String(count);
-let cost=count*(star?1.5:1);
-$('budgetInfo').textContent=`${count} combinazioni × ${(star?1.5:1).toFixed(2).replace('.',',')} € = ${cost.toFixed(2).replace('.',',')} € · budget massimo 20,00 €${star?' · SuperStar incluso':' · SuperStar escluso'}`;
+let star=$('withStar').checked,price=star?1.5:1;
+let budget=Math.max(1,Math.min(500,Number(String($('budget').value).replace(',','.'))||20));
+let max=Math.max(1,Math.min(200,Math.floor(budget/price+1e-9)));
+$('count').max=String(max);
+if($('useAll').checked)$('count').value=String(max);
+let count=Math.max(1,Math.min(max,Math.floor(Number($('count').value))||max));
+$('count').value=String(count);
+let cost=count*price,resto=budget-cost;
+$('budgetInfo').innerHTML=`${count} schedine × ${eur(price)} = <b>${eur(cost)}</b> su un budget di ${eur(budget)}${resto>=0.5?` · avanzano ${eur(resto)}`:''}${star?' · SuperStar incluso':' · SuperStar escluso'}`;
+$('budgetPill').textContent=`${count} combinazioni · ${eur(cost)}`;
 return {count,star,cost};
 }
 function makeTickets(){
@@ -196,7 +201,7 @@ $('tickets').insertAdjacentHTML('beforeend',`<div class="status">Ottimizzazione 
 function renderTickets(){$('tickets').innerHTML=generated.map((t,i)=>`<div class="ticket"><div class="row between"><h3>Combinazione ${String(i+1).padStart(2,'0')}</h3><small>${$('strategy').selectedOptions[0].text}</small></div><div class="balls">${t.nums.map(n=>`<span class="ball">${n}</span>`).join('')}${t.ss!==null?`<span class="muted" style="margin-left:8px">SuperStar</span><span class="ball ss">${t.ss}</span>`:''}</div></div>`).join('')}
 function parseImport(text){let out=[],bad=0;for(let line of text.split(/\r?\n/)){let a=(line.match(/\d+/g)||[]).map(Number);if(a.length===8){out.push({c:null,n:a.slice(0,6),j:a[6],ss:a[7],date:''})}else if(a.length>=9){out.push({c:a[0],n:a.slice(1,7),j:a[7],ss:a[8],date:''})}else{if(line.trim())bad++;continue}let d=out[out.length-1];if(!validDraw(d)){out.pop();bad++}}return {out,bad}}
 function download(name,content,type){let blob=new Blob([content],{type}),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-$('generate').onclick=makeTickets;$('withStar').onchange=()=>{updateBudget();};$('count').onchange=()=>{updateBudget();};
+$('generate').onclick=makeTickets;$('withStar').onchange=()=>{updateBudget();};$('count').oninput=()=>{$('useAll').checked=false;updateBudget()};$('budget').oninput=updateBudget;$('useAll').onchange=updateBudget;
 $('window').onchange=()=>{render();makeTickets()};$('strategy').onchange=makeTickets;
 $('copyTickets').onclick=async()=>{if(!generated.length)return alert('Genera prima le schedine.');let t=generated.map((x,i)=>`Combinazione ${i+1}: ${x.nums.join(' ')}${x.ss!==null?' | SuperStar '+x.ss:''}`).join('\n');try{await navigator.clipboard.writeText(t);alert('Schedine copiate.')}catch(e){prompt('Copia le schedine:',t)}};
 $('printTickets').onclick=()=>{if(!generated.length)return alert('Genera prima le schedine.');let w=open('','_blank');w.document.write('<pre>'+generated.map((x,i)=>`Combinazione ${i+1}: ${x.nums.join(' - ')}${x.ss!==null?' | SuperStar '+x.ss:''}`).join('\n\n')+'</pre>');w.print()};
