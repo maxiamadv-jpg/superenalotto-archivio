@@ -5,15 +5,19 @@ on:
     - cron: '30 6 * * *'    # controllo di riserva al mattino
   workflow_dispatch:         # pulsante "Run workflow" per aggiornare a mano
 permissions:
-  contents: write
+  contents: write          # serve solo per salvare data/estrazioni.json
+concurrency:
+  group: aggiorna-estrazioni
+  cancel-in-progress: false  # evita due commit concorrenti sullo stesso file
 jobs:
   aggiorna:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - run: node scripts/aggiorna.mjs
       - name: Salva se ci sono novità
         run: |
